@@ -1,6 +1,7 @@
 // src/components/AddProductForm.tsx
-import React, { useState } from "react";
-import type { Product, ProductFormData, FormDraft, FormErrors } from "../types";
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import type { Product, ProductFormData, ProductDraft, FormErrors } from "../types";
 
 interface AddProductFormProps {
   /** Called with the fully-typed new Product when the form submits cleanly */
@@ -11,31 +12,26 @@ interface AddProductFormProps {
   defaultImage: string;
 }
 
-// FormDraft signals this is a work-in-progress — not yet a full Product.
-const EMPTY_FORM: FormDraft = {
-  name: "",
-  price: "",
-  inStock: true,
-  onSale: false,
-};
+// A draft is Partial<ProductFormData>: every field may still be missing.
+const EMPTY_DRAFT: ProductDraft = { inStock: true };
 
 export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormProps) {
-  const [formData, setFormData] = useState<ProductFormData>(EMPTY_FORM);
+  const [draft, setDraft] = useState<ProductDraft>(EMPTY_DRAFT);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const validate = (): boolean => {
     const errors: FormErrors = {};
 
-    // ?. guards the optional Partial field; ?? '' ensures trim() never throws.
-    const trimmedName = formData.name?.trim() ?? "";
-    if (!trimmedName) {
+    const name = draft.name?.trim() ?? "";
+    if (!name) {
       errors.name = "Product name is required.";
-    } else if (trimmedName.length < 2) {
+    } else if (name.length < 2) {
       errors.name = "Name must be at least 2 characters.";
     }
 
-    const parsedPrice = parseFloat(formData.price);
-    if (!formData.price.trim()) {
+    const priceText = draft.price?.trim() ?? "";
+    const parsedPrice = parseFloat(priceText);
+    if (!priceText) {
       errors.price = "Price is required.";
     } else if (isNaN(parsedPrice) || parsedPrice <= 0) {
       errors.price = "Price must be a number greater than 0.";
@@ -45,34 +41,38 @@ export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormP
     return Object.keys(errors).length === 0;
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { value, type, checked } = e.target;
+    // The input's name attribute must match a ProductFormData key.
+    const field = e.target.name as keyof ProductFormData;
+
+    setDraft((prev: ProductDraft) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [field]: type === "checkbox" ? checked : value,
     }));
-    if (formErrors[name as keyof FormErrors]) {
-      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+
+    // Clear the inline error for this field as the user types.
+    if (field === "name" || field === "price") {
+      setFormErrors((prev: FormErrors) => ({ ...prev, [field]: undefined }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (!validate()) return;
 
     const newProduct: Product = {
       id: Date.now(),
-      // ?. + ??: Partial fields may be undefined — fall back to safe defaults.
-      name: formData.name?.trim() ?? "",
-      price: parseFloat(formData.price),
+      name: (draft.name ?? "").trim(),
+      price: parseFloat(draft.price ?? ""),
       costPrice: 0, // placeholder — operator sets actual cost price separately
       image: defaultImage,
-      inStock: formData.inStock ?? true,
-      onSale: formData.onSale ?? false,
+      inStock: draft.inStock ?? true,
+      onSale: draft.onSale ?? false,
     };
 
     onAdd(newProduct);
-    setFormData(EMPTY_FORM);
+    setDraft(EMPTY_DRAFT);
     setFormErrors({});
   };
 
@@ -110,7 +110,7 @@ export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormP
               type="text"
               name="name"
               placeholder="e.g. Mechanical Numpad"
-              value={formData.name ?? ""}
+              value={draft.name ?? ""}
               onChange={handleChange}
               className={`w-full px-3.5 py-2.5 rounded-xl border text-sm transition outline-hidden ${
                 formErrors.name
@@ -140,7 +140,7 @@ export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormP
               min="0.01"
               name="price"
               placeholder="e.g. 49.99"
-              value={formData.price}
+              value={draft.price ?? ""}
               onChange={handleChange}
               className={`w-full px-3.5 py-2.5 rounded-xl border text-sm transition outline-hidden ${
                 formErrors.price
@@ -162,7 +162,7 @@ export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormP
             <input
               type="checkbox"
               name="inStock"
-              checked={formData.inStock ?? true}
+              checked={draft.inStock ?? true}
               onChange={handleChange}
               className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer accent-indigo-600"
             />
@@ -173,7 +173,7 @@ export function AddProductForm({ onAdd, onClose, defaultImage }: AddProductFormP
             <input
               type="checkbox"
               name="onSale"
-              checked={formData.onSale ?? false}
+              checked={draft.onSale ?? false}
               onChange={handleChange}
               className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer accent-indigo-600"
             />

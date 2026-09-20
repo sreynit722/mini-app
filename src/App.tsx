@@ -3,14 +3,12 @@ import { useState } from "react";
 import ProductImg from "./assets/product.jpg";
 import LaptopImg from "./assets/laptop.jpg";
 import type { Product, PublicProduct, FilterMode } from "./types";
-import { ProductCard } from "./components/product";
+import { ProductCard } from "./components/ProductCard";
 import { Toolbar } from "./components/Toolbar";
 import { AddProductForm } from "./components/AddProductForm";
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
-// 1. Type the mini-app end to end: props interfaces on every component, React.ChangeEvent on handlers, useState<Product[]> for the list—zero implicit any.
-// Every entry is typed as Product (includes costPrice) — fulfils the
-// "add to every product in INITIAL_PRODUCTS" requirement.
+// Every entry is typed as Product (includes the internal costPrice).
 const INITIAL_PRODUCTS: Product[] = [
   {
     id: 1,
@@ -68,9 +66,13 @@ const INITIAL_PRODUCTS: Product[] = [
   },
 ];
 
+// Strips the internal costPrice so it never reaches UI components at runtime
+// (Omit only hides it from the type; this removes it from the object).
+const toPublic = ({ costPrice, ...rest }: Product): PublicProduct => rest;
+
 // ─── Root component ────────────────────────────────────────────────────────────
 function App() {
-  // All state is explicitly typed — zero implicit any
+  // All state is explicitly typed
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
@@ -194,7 +196,7 @@ function App() {
           {filteredProducts.map((product: Product) => (
             <ProductCard
               key={product.id}
-              product={product}
+              product={toPublic(product)}
               onAddToCart={handleAddToCart}
               onToggleStock={handleToggleStock}
             />

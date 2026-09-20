@@ -10,22 +10,21 @@ export interface Product {
   onSale: boolean;
 }
 
-// 2. Derive instead of repeat: strip the internal field via Omit.
 /** Subset of Product safe to pass to UI components (hides costPrice). */
 export type PublicProduct = Omit<Product, "costPrice">;
 
 export type FilterMode = "all" | "inStock" | "soldOut";
 
-// 3. Derive instead of repeat: form draft = all Product fields the form
-//    touches, made optional via Partial, with price kept as a string
-//    (raw text-field value) via an override intersection.
-export type ProductFormData = Partial<Pick<Product, "name" | "inStock" | "onSale">> & {
-  /** Raw string from the price <input> — converted to number on submit. */
-  price: string;
-};
+/** Shape of a completed form. */
+export interface ProductFormData {
+  name: string;
+  price: string; // inputs always give strings; converted with parseFloat on submit
+  inStock: boolean;
+  onSale: boolean;
+}
 
-/** Alias that signals intent: a saved-but-not-yet-submitted draft. */
-export type FormDraft = ProductFormData;
+/** A form that is still being filled in: every field is optional. */
+export type ProductDraft = Partial<ProductFormData>;
 
-// 4. Derive error keys from the form type so they never drift.
-export type FormErrors = Partial<Record<keyof ProductFormData, string>>;
+/** Inline validation messages, keyed by the fields that get validated. */
+export type FormErrors = Partial<Record<"name" | "price", string>>;

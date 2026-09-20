@@ -19,8 +19,8 @@ export function ProductCard({ product, onAddToCart, onToggleStock }: ProductCard
       {/* Product Media */}
       <div className="relative w-full aspect-4/3 overflow-hidden bg-slate-100 dark:bg-slate-800">
         <img
-          src={product.image ?? ""}
-          alt={product.name ?? ""}
+          src={product.image}
+          alt={product.name}
           className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
             !product.inStock ? "grayscale-50 opacity-80" : ""
           }`}
@@ -58,16 +58,16 @@ export function ProductCard({ product, onAddToCart, onToggleStock }: ProductCard
       {/* Product Content */}
       <div className="p-5 flex flex-col flex-grow">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2 leading-snug">
-          {product.name ?? "Unnamed Product"}
+          {product.name}
         </h2>
 
         <div className="flex items-baseline gap-2.5 mb-5">
           <span className="text-2xl font-bold text-slate-900 dark:text-white">
-            ${product.price?.toFixed(2) ?? "0.00"}
+            ${product.price.toFixed(2)}
           </span>
           {product.onSale && (
             <span className="text-sm text-slate-400 line-through">
-              ${((product.price ?? 0) * 1.25).toFixed(2)}
+              ${(product.price * 1.25).toFixed(2)}
             </span>
           )}
         </div>
@@ -83,7 +83,7 @@ export function ProductCard({ product, onAddToCart, onToggleStock }: ProductCard
             }`}
             onClick={() => onAddToCart(product)}
             disabled={!product.inStock}
-            aria-label={`Add ${product.name ?? "this product"} to cart`}
+            aria-label={`Add ${product.name} to cart`}
           >
             {product.inStock ? "Add to Cart" : "Out of Stock"}
           </button>
@@ -93,7 +93,7 @@ export function ProductCard({ product, onAddToCart, onToggleStock }: ProductCard
             className="px-3 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition cursor-pointer whitespace-nowrap"
             onClick={() => onToggleStock(product.id)}
             title={product.inStock ? "Click to mark as sold out" : "Click to restock"}
-            aria-label={`Toggle stock status for ${product.name ?? "this product"}`}
+            aria-label={`Toggle stock status for ${product.name}`}
           >
             {product.inStock ? "Mark Sold Out" : "Restock"}
           </button>

@@ -1,4 +1,5 @@
 // src/components/Toolbar.tsx
+import type { ChangeEvent } from "react";
 import type { FilterMode } from "../types";
 
 interface ToolbarProps {
@@ -30,7 +31,7 @@ export function Toolbar({
           type="text"
           placeholder="Search products by name..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
             onSearchChange(e.target.value)
           }
           aria-label="Search products"
