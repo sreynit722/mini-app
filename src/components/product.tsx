@@ -83,7 +83,7 @@ export function ProductCard({ product, onAddToCart, onToggleStock }: ProductCard
             }`}
             onClick={() => onAddToCart(product)}
             disabled={!product.inStock}
-            aria-label={`Add ${product.name} to cart`}
+            aria-label={`Add ${product.name ?? "this product"} to cart`}
           >
             {product.inStock ? "Add to Cart" : "Out of Stock"}
           </button>
